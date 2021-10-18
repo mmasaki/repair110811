@@ -274,7 +274,7 @@ void initRDS(RDS *rds)
 
 RDS *createRDS(std::string data)
 {
-  uint size_w;
+  size_t size_w;
   uint i;
   SEQ *seq;
   CODE c;
@@ -286,7 +286,7 @@ RDS *createRDS(std::string data)
   RDS *rds;
 
   size_w = data.length();  
-  printf("text size = %d(bytes)\n", size_w);
+  printf("text size = %ld(bytes)\n", size_w);
   seq = (SEQ*)malloc(sizeof(SEQ)*size_w);
 
   i = 0;
