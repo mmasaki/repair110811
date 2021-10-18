@@ -18,17 +18,31 @@
  */
 
 
-#ifndef DECODERINCLUDED
-#define DECODERINCLUDED
+#ifndef ENCODERINCLUDED
+#define ENCODERINCLUDED
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "basics.h"
-#include "repair.h"
-#include "bits.h"
+#include "bits.hpp"
+#include "basics.hpp"
+#include "repair.hpp"
 
-void DecodeCFG(FILE *input, FILE *output);
+typedef struct EncodeDictionary
+{
+  uint txt_len;
+  uint seq_len;
+  uint num_rules;
+  CODE *comp_seq;
+  RULE *rule;
+  CODE *tcode;
+} EDICT;
 
+EDICT *ReadCFG(FILE *input);
+void EncodeCFG(EDICT *dict, FILE *output);
+void encodeCFG_rec(CODE code, EDICT *dict, BITOUT *bitout);
+void putLeaf(uint numcode, CODE lcode, BITOUT *bitout);
+void putParen(uchar b, BITOUT *bitout);
+void DestructEDict(EDICT *dict);
 #endif

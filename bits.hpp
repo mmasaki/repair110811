@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
-#include "basics.h"
+#include "basics.hpp"
 
 #define BITIN_BUF_LEN 32768 /* BITIN_BUF_LEN*sizeof(uint) bytes */
 #define BITOUT_BUF_LEN 32768 /* BITOUT_BUF_LEN*sizeof(uint) bytes */

@@ -18,7 +18,7 @@
  */
 
 
-#include "decoder.h"
+#include "decoder.hpp"
 
 #define BUFF_SIZE 32768
 char buffer[BUFF_SIZE];

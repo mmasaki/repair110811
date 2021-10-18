@@ -18,7 +18,7 @@
  */
 
 
-#include "bits.h"
+#include "bits.hpp"
 
 // functions for debug
 void printBinary(uint x) {
@@ -128,7 +128,7 @@ uint readBits(BITIN *b, uint rblen) {
   }
 
   if (rblen < b->bitlen) {
-    x = b->bitbuf >> W_BITS - rblen;
+    x = b->bitbuf >> (W_BITS - rblen);
     b->bitbuf <<= rblen;
     b->bitlen -= rblen;
   }

@@ -17,7 +17,7 @@
  *      software without specific prior written permission.
  */
 
-#include "encoder.h"
+#include "encoder.hpp"
 
 uint bits (uint n)
 { uint b = 0;

@@ -22,7 +22,7 @@ Author's contact: Shirou Maruyama, Dept. of Informatics, Kyushu University. 744 
 */
 
 #include <assert.h>
-#include "repair.h" 
+#include "repair.hpp"
 
 PAIR *locatePair(RDS *rds, CODE left, CODE right);
 void reconstructHash(RDS *rds);

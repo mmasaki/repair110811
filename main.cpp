@@ -18,8 +18,8 @@
  */
 
 #ifdef REPAIR
-#include "repair.h"
-#include "encoder.h"
+#include "repair.hpp"
+#include "encoder.hpp"
 #include "string.h"
 
 EDICT *convertDict(DICT *dict)
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef DESPAIR
-#include "decoder.h"
+#include "decoder.hpp"
 int main(int argc, char *argv[])
 {
   char input_filename[1024];
