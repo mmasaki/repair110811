@@ -592,7 +592,6 @@ std::unordered_map<std::pair<int, int>, int, pair_hash> code_map;
 
 CODE addNewPair(DICT *dict, PAIR *max_pair)
 {
-  RULE *rule = dict->rule;
   CODE new_code;
 
   auto bigram = std::make_pair(max_pair->left, max_pair->right);
@@ -605,8 +604,8 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
   } else {
     new_code = dict->num_rules++;
     code_map[bigram] = new_code;
-    rule[new_code].left = max_pair->left;
-    rule[new_code].right = max_pair->right;
+    dict->rule[new_code].left = max_pair->left;
+    dict->rule[new_code].right = max_pair->right;
 
     if (dict->num_rules >= dict->buff_size) {
       dict->buff_size *= DICTIONARY_SCALING_FACTOR;
