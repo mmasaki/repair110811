@@ -24,6 +24,21 @@ Author's contact: Shirou Maruyama, Dept. of Informatics, Kyushu University. 744 
 #include <assert.h>
 #include "repair.hpp"
 
+#include <vector>
+#include <thread>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <mutex>
+#include <map>
+#include <unordered_map>
+#include <atomic>
+
+using namespace std;
+
+std::mutex m;
+
 PAIR *locatePair(RDS *rds, CODE left, CODE right);
 void reconstructHash(RDS *rds);
 void insertPair_PQ(RDS *rds, PAIR *target, uint p_num);
@@ -239,7 +254,8 @@ void initRDS(RDS *rds)
   PAIR *pair;
   PAIR **p_que = rds->p_que;
 
-  for (i = 0; i < size_w - 1; i++) {
+  /* for (i = 0; i < size_w - 1; i++) { */
+  for (i = 0; i < size_w - 2; i++) {
     A = seq[i].code;
     B = seq[i+1].code;
     if ((pair = locatePair(rds, A, B)) == NULL) {
@@ -256,7 +272,7 @@ void initRDS(RDS *rds)
   resetPQ(rds, 1);
 }
 
-RDS *createRDS(FILE *input)
+RDS *createRDS(std::string data)
 {
   uint size_w;
   uint i;
@@ -269,16 +285,13 @@ RDS *createRDS(FILE *input)
   PAIR *pair;
   RDS *rds;
 
-  fseek(input,0,SEEK_END);
-  size_w = ftell(input);
-  rewind(input);
+  size_w = data.length();  
+  printf("text size = %d(bytes)\n", size_w);
   seq = (SEQ*)malloc(sizeof(SEQ)*size_w);
 
-  printf("text size = %d(bytes)\n", size_w);
-
   i = 0;
-  while ((c = getc(input)) != EOF) {
-    seq[i].code = c;
+  for(char& c : data) {
+    seq[i].code = (unsigned char)c;
     seq[i].next = DUMMY_POS;
     seq[i].prev = DUMMY_POS;
     i++;
@@ -304,6 +317,7 @@ RDS *createRDS(FILE *input)
   rds->h_first = h_first;
   rds->p_max = p_max;
   rds->p_que = p_que;
+  rds->p_i = 0;
   initRDS(rds);
 
   return rds;
@@ -322,7 +336,7 @@ void destructRDS(RDS *rds)
 
 PAIR *getMaxPair(RDS *rds)
 {
-  static uint i = 0;
+  uint i = rds->p_i;
   PAIR **p_que = rds->p_que;
   PAIR *p, *max_pair;
   uint max;
@@ -332,8 +346,8 @@ PAIR *getMaxPair(RDS *rds)
     max = 0; max_pair = NULL;
     while (p != NULL) {
       if (max < p->freq) {
-	max = p->freq;
-	max_pair = p;
+        max = p->freq;
+        max_pair = p;
       }
       p = p->p_next;
     }
@@ -343,11 +357,12 @@ PAIR *getMaxPair(RDS *rds)
     if (i == 0) i = rds->p_max-1;
     for (; i > 1; i--) {
       if (p_que[i] != NULL) {
-	max_pair = p_que[i];
-	break;
+        max_pair = p_que[i];
+        break;
       }
     }
   }
+  rds->p_i = i;
   return max_pair;
 }
 
@@ -564,22 +579,47 @@ DICT *createDict(uint txt_len)
   return dict;
 }
 
+struct pair_hash
+{
+ template <class T1, class T2>
+ std::size_t operator() (const std::pair<T1, T2> &pair) const
+ {
+   return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
+ }
+};
+
+std::unordered_map<std::pair<int, int>, int, pair_hash> code_map;
+
 CODE addNewPair(DICT *dict, PAIR *max_pair)
 {
   RULE *rule = dict->rule;
-  CODE new_code = dict->num_rules++;
+  CODE new_code;
 
-  rule[new_code].left = max_pair->left;
-  rule[new_code].right = max_pair->right;
+  auto bigram = std::make_pair(max_pair->left, max_pair->right);
 
-  if (dict->num_rules >= dict->buff_size) {
-    dict->buff_size *= DICTIONARY_SCALING_FACTOR;
-    dict->rule = (RULE*)realloc(dict->rule, sizeof(RULE)*dict->buff_size);
-    if (dict->rule == NULL) {
-      puts("Memory reallocate error (rule) at addDict.");
-      exit(1);
+  m.lock();
+
+  if (code_map.find(bigram) != code_map.end()) {
+    new_code = code_map[bigram];
+    /* printf("hit\n"); */
+  } else {
+    new_code = dict->num_rules++;
+    code_map[bigram] = new_code;
+    rule[new_code].left = max_pair->left;
+    rule[new_code].right = max_pair->right;
+
+    if (dict->num_rules >= dict->buff_size) {
+      dict->buff_size *= DICTIONARY_SCALING_FACTOR;
+      dict->rule = (RULE*)realloc(dict->rule, sizeof(RULE)*dict->buff_size);
+      if (dict->rule == NULL) {
+        puts("Memory reallocate error (rule) at addDict.");
+        exit(1);
+      }
     }
   }
+
+  m.unlock();
+
   return new_code;
 }
 
@@ -600,8 +640,16 @@ void getCompSeq(RDS *rds, DICT *dict)
     i++;
   }
 
-  comp_seq = (CODE*)malloc(sizeof(CODE)*seq_len);
-  i = j = 0;
+  printf("rules: %u\n", dict->num_rules);
+  printf("dict seqlen: %d\n", seq_len);
+  if (dict->comp_seq) {
+    comp_seq = (CODE*)realloc(dict->comp_seq, sizeof(CODE)*(dict->seq_len+seq_len));
+  } else {
+    comp_seq = (CODE*)malloc(sizeof(CODE)*seq_len);
+  }
+  i = 0;
+  j = dict->seq_len;
+
   while (i < rds->txt_len) {
     if (seq[i].code == DUMMY_CODE) {
       i = seq[i].prev;
@@ -611,29 +659,64 @@ void getCompSeq(RDS *rds, DICT *dict)
     i++;
   }
   dict->comp_seq = comp_seq;
-  dict->seq_len = seq_len;
+  dict->seq_len += seq_len;
 }
 
-DICT *RunRepair(FILE *input)
+DICT *RunRepair(char *target_filename, int threads)
 {
-  RDS  *rds;
+  RDS  *rds[threads];
+  std::vector<std::thread> ths;
   DICT *dict;
   PAIR *max_pair;
   CODE new_code;
   uint num_loop, num_replaced;
+  std::atomic_uint cseqlen;
+  std::ifstream fin(target_filename);
 
-  rds  = createRDS(input);
-  dict = createDict(rds->txt_len);
+  if (!fin) return NULL;
+
+  std::stringstream strstream;
+  strstream << fin.rdbuf();
+  fin.close();
+
+  std::string data(strstream.str());
+  long txt_len = data.length();
+  long block_len = txt_len / threads;
+  long rest = txt_len % threads;
+
+  dict = createDict(txt_len);
 
   printf("Generating CFG..."); fflush(stdout);
   num_loop = 0; num_replaced = 0;
-  while ((max_pair = getMaxPair(rds)) != NULL) {
-    new_code = addNewPair(dict, max_pair);
-    //if (new_code > USHRT_MAX) break;
-    num_replaced += replacePairs(rds, max_pair, new_code);
+  for (int i = 0; i < threads; i++) {
+    ths.push_back(std::thread([&, i](){
+      PAIR *max_pair;
+      CODE new_code;
+      long start = block_len * i;
+      long len = block_len;
+      if (i == threads-1) { len += rest; }
+      std::string block = data.substr(start, len);
+      printf("block_len: %lu\n", block.length());
+      rds[i] = createRDS(block);
+      while ((max_pair = getMaxPair(rds[i])) != NULL) {
+        new_code = addNewPair(dict, max_pair);
+        //if (new_code > USHRT_MAX) break;
+        cseqlen -= replacePairs(rds[i], max_pair, new_code);
+      }
+    }));
   }
-  getCompSeq(rds, dict);
-  destructRDS(rds);
+
+  for (std::thread &th : ths) {
+    th.join();
+  }
+
+  CODE *comp_seq;
+  for (int i = 0; i < threads; i++) {
+    getCompSeq(rds[i], dict);
+    destructRDS(rds[i]);
+  }
+
+  printf("rule: %d seq_len: %d\n", dict->num_rules, dict->seq_len);
   printf("Finished!\n"); fflush(stdout);
 
   return dict;
@@ -642,7 +725,7 @@ DICT *RunRepair(FILE *input)
 void DestructDict(DICT *dict)
 {
   free(dict->rule);
-  free(dict->comp_seq);
+  /* free(dict->comp_seq); */
   free(dict);
 }
 

@@ -22,6 +22,8 @@
 #include "encoder.hpp"
 #include "string.h"
 
+#include <cstdlib>
+
 EDICT *convertDict(DICT *dict)
 {
   EDICT *edict = (EDICT*)malloc(sizeof(EDICT));
@@ -48,24 +50,20 @@ int main(int argc, char *argv[])
 {
   char *target_filename;
   char output_filename[1024];
-  FILE *input, *output;
+  FILE *output;
   DICT *dict;
   EDICT *edict;
 
-  if (argc != 2) {
-    printf("Usage: %s <filename>\n"
+  if (argc != 3) {
+    printf("Usage: %s <filename> <threads>\n"
 	   "Compresses <filename> with repair and creates "
 	   "<filename>.rp compressed files\n\n", argv[0]);
     exit(1);
   }
   target_filename = argv[1];
+  int threads = std::atoi(argv[2]);
+  printf("threads: %d\n", threads);
   
-  input  = fopen(target_filename, "r");
-  if (input == NULL) {
-    puts("File open error at the beginning.");
-    exit(1);
-  }
-
   strcpy(output_filename, target_filename);
   strcat(output_filename, ".rp");
   output = fopen(output_filename, "wb");
@@ -74,12 +72,11 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-  dict = RunRepair(input);
+  dict = RunRepair(target_filename, threads);
   edict = convertDict(dict);
   EncodeCFG(edict, output);
   DestructEDict(edict);
 
-  fclose(input);
   fclose(output);
   exit(0);
 }
@@ -143,7 +140,7 @@ int main(int argc, char *argv[])
 {
   char *target_filename;
   char *output_filename;
-  FILE *input, *output;
+  FILE *output;
   DICT *dict;
   EDICT *edict;
 
@@ -154,14 +151,13 @@ int main(int argc, char *argv[])
   target_filename = argv[1];
   output_filename = argv[2];
   
-  input  = fopen(target_filename, "r");
   output = fopen(output_filename, "wb");
-  if (input == NULL || output == NULL) {
+  if (output == NULL) {
     puts("File open error at the beginning.");
     exit(1);
   }
 
-  dict = RunRepair(input);
+  dict = RunRepair();
   edict = convertDict(dict);
   EncodeCFG(edict, output);
   DestructEDict(edict);

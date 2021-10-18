@@ -51,6 +51,7 @@ typedef struct RePair_data_structures {
   PAIR **h_first;
   uint p_max;
   PAIR **p_que;
+  uint p_i;
 } RDS;
 
 typedef struct Rule {
@@ -67,7 +68,7 @@ typedef struct Dictionary {
   uint buff_size;
 } DICT;
 
-DICT *RunRepair(FILE *input);
+DICT *RunRepair(char *target_filename, int threads);
 void DestructDict(DICT *dict);
 void OutputGeneratedCFG(DICT *dict, FILE *output);
 
