@@ -612,6 +612,9 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
         exit(1);
       }
     }
+  } else {
+    auto item = *result.first;
+    new_code = item.second;
   }
 
   m.unlock();
