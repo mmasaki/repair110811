@@ -592,18 +592,15 @@ std::unordered_map<std::pair<int, int>, int, pair_hash> code_map;
 
 CODE addNewPair(DICT *dict, PAIR *max_pair)
 {
-  CODE new_code;
-
+  CODE new_code = dict->num_rules;
   auto bigram = std::make_pair(max_pair->left, max_pair->right);
 
   m.lock();
 
-  if (code_map.find(bigram) != code_map.end()) {
-    new_code = code_map[bigram];
-    /* printf("hit\n"); */
-  } else {
-    new_code = dict->num_rules++;
-    code_map[bigram] = new_code;
+  auto result = code_map.emplace(bigram, new_code);
+
+  if (result.second) {
+    dict->num_rules++;
     dict->rule[new_code].left = max_pair->left;
     dict->rule[new_code].right = max_pair->right;
 
@@ -684,6 +681,7 @@ DICT *RunRepair(char *target_filename, int threads)
   long rest = txt_len % threads;
 
   dict = createDict(txt_len);
+  code_map.rehash(txt_len / 100);
 
   printf("Generating CFG..."); fflush(stdout);
   num_loop = 0; num_replaced = 0;
@@ -695,7 +693,7 @@ DICT *RunRepair(char *target_filename, int threads)
       long len = block_len;
       if (i == threads-1) { len += rest; }
       std::string block = data.substr(start, len);
-      printf("block_len: %lu\n", block.length());
+      printf("block_len %d: %lu\n", i, block.length());
       rds[i] = createRDS(block);
       while ((max_pair = getMaxPair(rds[i])) != NULL) {
         new_code = addNewPair(dict, max_pair);
