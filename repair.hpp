@@ -26,6 +26,8 @@
 #include <math.h>
 #include "basics.hpp"
 
+#include <atomic>
+
 typedef struct Sequence {
   CODE code;
   uint next;

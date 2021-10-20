@@ -34,6 +34,11 @@ Author's contact: Shirou Maruyama, Dept. of Informatics, Kyushu University. 744 
 #include <map>
 #include <unordered_map>
 #include <atomic>
+#include <boost/functional/hash.hpp>
+
+#include "tbb/concurrent_hash_map.h"
+#include "tbb/scalable_allocator.h"
+#include "tbb/tick_count.h"
 
 using namespace std;
 
@@ -286,7 +291,7 @@ RDS *createRDS(std::string data)
   RDS *rds;
 
   size_w = data.length();  
-  printf("text size = %ld(bytes)\n", size_w);
+  /* printf("text size = %ld(bytes)\n", size_w); */
   seq = (SEQ*)malloc(sizeof(SEQ)*size_w);
 
   i = 0;
@@ -579,6 +584,7 @@ DICT *createDict(uint txt_len)
   return dict;
 }
 
+/*
 struct pair_hash
 {
  template <class T1, class T2>
@@ -587,8 +593,11 @@ struct pair_hash
    return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
  }
 };
+*/
 
-std::unordered_map<std::pair<int, int>, int, pair_hash> code_map;
+/* std::unordered_map<std::pair<int, int>, int, pair_hash> code_map; */
+/*
+std::unordered_map<std::pair<int, int>, int, boost::hash<pair<int, int>>> code_map;
 
 CODE addNewPair(DICT *dict, PAIR *max_pair)
 {
@@ -596,7 +605,6 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
   auto bigram = std::make_pair(max_pair->left, max_pair->right);
 
   m.lock();
-
   auto result = code_map.emplace(bigram, new_code);
 
   if (result.second) {
@@ -605,6 +613,8 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
     dict->rule[new_code].right = max_pair->right;
 
     if (dict->num_rules >= dict->buff_size) {
+
+      puts("realloc");
       dict->buff_size *= DICTIONARY_SCALING_FACTOR;
       dict->rule = (RULE*)realloc(dict->rule, sizeof(RULE)*dict->buff_size);
       if (dict->rule == NULL) {
@@ -616,8 +626,42 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
     auto item = *result.first;
     new_code = item.second;
   }
-
   m.unlock();
+
+  return new_code;
+}
+*/
+
+tbb::concurrent_hash_map<std::pair<int, int>, int> code_map;
+
+CODE addNewPair(DICT *dict, PAIR *max_pair)
+{
+  CODE new_code = dict->num_rules;
+  auto bigram = make_pair(max_pair->left, max_pair->right);
+  tbb::concurrent_hash_map<std::pair<int, int>, int>::accessor a;
+
+  bool result = code_map.insert(a, bigram);
+
+  if (result) {
+    a->second = dict->num_rules++;
+    m.lock();
+    dict->rule[new_code].left = max_pair->left;
+    dict->rule[new_code].right = max_pair->right;
+
+    if (dict->num_rules >= dict->buff_size) {
+
+      /* puts("realloc"); */
+      dict->buff_size *= DICTIONARY_SCALING_FACTOR;
+      dict->rule = (RULE*)realloc(dict->rule, sizeof(RULE)*dict->buff_size);
+      if (dict->rule == NULL) {
+        puts("Memory reallocate error (rule) at addDict.");
+        exit(1);
+      }
+    }
+    m.unlock();
+  } else {
+    new_code = a->second;
+  }
 
   return new_code;
 }
@@ -684,7 +728,7 @@ DICT *RunRepair(char *target_filename, int threads)
   long rest = txt_len % threads;
 
   dict = createDict(txt_len);
-  code_map.rehash(txt_len / 100);
+  code_map.rehash(txt_len / 50);
 
   printf("Generating CFG..."); fflush(stdout);
   num_loop = 0; num_replaced = 0;
@@ -698,6 +742,7 @@ DICT *RunRepair(char *target_filename, int threads)
       std::string block = data.substr(start, len);
       printf("block_len %d: %lu\n", i, block.length());
       rds[i] = createRDS(block);
+      /* printf("RDS created: %d\n", i); */
       while ((max_pair = getMaxPair(rds[i])) != NULL) {
         new_code = addNewPair(dict, max_pair);
         //if (new_code > USHRT_MAX) break;

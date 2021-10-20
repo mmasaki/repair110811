@@ -9,7 +9,7 @@ CC	= gcc
 CXX = g++
 CFLAGS	= -O3 -DNDEBUG
 CXXFLAGS = -O2 -std=c++11 -g3 -pthread
-LIB	= -lm
+LIB	= -lm -ltbb
 
 all: $(REPAIR)
 
