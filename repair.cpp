@@ -636,7 +636,7 @@ tbb::concurrent_hash_map<std::pair<int, int>, int> code_map;
 
 CODE addNewPair(DICT *dict, PAIR *max_pair)
 {
-  CODE new_code = dict->num_rules;
+  CODE new_code;
   auto bigram = make_pair(max_pair->left, max_pair->right);
   tbb::concurrent_hash_map<std::pair<int, int>, int>::accessor a;
 
@@ -645,7 +645,7 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
   m.lock();
 
   if (result) {
-    a->second = dict->num_rules++;
+    new_code = a->second = dict->num_rules++;
     dict->rule[new_code].left = max_pair->left;
     dict->rule[new_code].right = max_pair->right;
 
