@@ -34,7 +34,7 @@ Author's contact: Shirou Maruyama, Dept. of Informatics, Kyushu University. 744 
 #include <map>
 #include <unordered_map>
 #include <atomic>
-#include <boost/functional/hash.hpp>
+// #include <boost/functional/hash.hpp>
 
 #include "tbb/concurrent_hash_map.h"
 #include "tbb/scalable_allocator.h"
