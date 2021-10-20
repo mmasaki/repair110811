@@ -49,23 +49,24 @@ EDICT *convertDict(DICT *dict)
 int main(int argc, char *argv[])
 {
   char *target_filename;
-  char output_filename[1024];
+  char *output_filename;
   FILE *output;
   DICT *dict;
   EDICT *edict;
 
-  if (argc != 3) {
-    printf("Usage: %s <filename> <threads>\n"
+  if (argc != 4) {
+    printf("Usage: %s <filename> <output> <threads>\n"
 	   "Compresses <filename> with repair and creates "
-	   "<filename>.rp compressed files\n\n", argv[0]);
+	   "<output> compressed files\n\n", argv[0]);
     exit(1);
   }
   target_filename = argv[1];
-  int threads = std::atoi(argv[2]);
+  output_filename = argv[2];
+  int threads = std::atoi(argv[3]);
   printf("threads: %d\n", threads);
   
-  strcpy(output_filename, target_filename);
-  strcat(output_filename, ".rp");
+  /* strcpy(output_filename, target_filename); */
+  /* strcat(output_filename, ".rp"); */
   output = fopen(output_filename, "wb");
   if (output == NULL) {
     puts("File open error at the beginning.");
