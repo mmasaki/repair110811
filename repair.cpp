@@ -602,7 +602,7 @@ std::unordered_map<std::pair<int, int>, int, boost::hash<pair<int, int>>> code_m
 CODE addNewPair(DICT *dict, PAIR *max_pair)
 {
   CODE new_code = dict->num_rules;
-  auto bigram = std::make_pair(max_pair->left, max_pair->right);
+  auto bigram = make_pair(max_pair->left, max_pair->right);
 
   m.lock();
   auto result = code_map.emplace(bigram, new_code);
@@ -642,9 +642,10 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
 
   bool result = code_map.insert(a, bigram);
 
+  m.lock();
+
   if (result) {
     a->second = dict->num_rules++;
-    m.lock();
     dict->rule[new_code].left = max_pair->left;
     dict->rule[new_code].right = max_pair->right;
 
@@ -658,10 +659,13 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
         exit(1);
       }
     }
-    m.unlock();
   } else {
     new_code = a->second;
+    /* printf("%d\n", new_code); */
   }
+
+  a.release();
+  m.unlock();
 
   return new_code;
 }
