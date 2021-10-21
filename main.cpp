@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
   DICT *dict;
   EDICT *edict;
 
-  if (argc != 3) {
+  if (argc != 4) {
     printf("Usage: %s <filename> <threads>\n"
 	   "Compresses <filename> with repair and creates "
 	   "<filename>.rp compressed files\n\n", argv[0]);
