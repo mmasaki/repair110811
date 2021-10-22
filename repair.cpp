@@ -642,10 +642,10 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
 
   bool result = code_map.insert(a, bigram);
 
-  m.lock();
-
   if (result) {
+    m.lock();
     new_code = a->second = dict->num_rules++;
+    a.release();
     dict->rule[new_code].left = max_pair->left;
     dict->rule[new_code].right = max_pair->right;
 
@@ -659,13 +659,11 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
         exit(1);
       }
     }
+    m.unlock();
   } else {
     new_code = a->second;
-    /* printf("%d\n", new_code); */
+    a.release();
   }
-
-  a.release();
-  m.unlock();
 
   return new_code;
 }
