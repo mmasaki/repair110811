@@ -59,10 +59,10 @@ typedef struct Rule {
 } RULE;
 
 typedef struct Dictionary {
-  uint txt_len;
+  size_t txt_len;
   uint num_rules;
   RULE *rule;
-  uint seq_len;
+  size_t seq_len;
   CODE *comp_seq;
   uint buff_size;
 } DICT;

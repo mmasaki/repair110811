@@ -258,7 +258,7 @@ void initRDS(RDS *rds)
 
 RDS *createRDS(FILE *input)
 {
-  uint size_w;
+  size_t size_w;
   uint i;
   SEQ *seq;
   CODE c;
@@ -274,7 +274,7 @@ RDS *createRDS(FILE *input)
   rewind(input);
   seq = (SEQ*)malloc(sizeof(SEQ)*size_w);
 
-  printf("text size = %d(bytes)\n", size_w);
+  printf("text size = %ld(bytes)\n", size_w);
 
   i = 0;
   while ((c = getc(input)) != EOF) {
