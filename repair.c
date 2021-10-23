@@ -30,19 +30,19 @@ void insertPair_PQ(RDS *rds, PAIR *target, uint p_num);
 void removePair_PQ(RDS *rds, PAIR *target, uint p_num);
 void incrementPair(RDS *rds, PAIR *target);
 void decrementPair(RDS *rds, PAIR *target);
-PAIR *createPair(RDS *rds, CODE left, CODE right, uint f_pos);
+PAIR *createPair(RDS *rds, CODE left, CODE right, ulong f_pos);
 void destructPair(RDS *rds, PAIR *target);
 void resetPQ(RDS *rds, uint p_num);
 void initRDS(RDS *rds);
 RDS *createRDS(FILE *input);
 void destructRDS(RDS *rds);
 PAIR *getMaxPair(RDS *rds);
-uint leftPos_SQ(RDS *rds, uint pos);
-uint rightPos_SQ(RDS *rds, uint pos);
-void removeLink_SQ(RDS *rds, uint target_pos);
-void updateBlock_SQ(RDS *rds, CODE new_code, uint target_pos);
+ulong leftPos_SQ(RDS *rds, ulong pos);
+ulong rightPos_SQ(RDS *rds, ulong pos);
+void removeLink_SQ(RDS *rds, ulong target_pos);
+void updateBlock_SQ(RDS *rds, CODE new_code, ulong target_pos);
 uint replacePairs(RDS *rds, PAIR *max_pair, CODE new_code);
-DICT *createDict(uint txt_len);
+DICT *createDict(size_t txt_len);
 CODE addNewPair(DICT *dict, PAIR *max_pair);
 void getCompSeq(RDS *rds, DICT *dict);
 
@@ -160,7 +160,7 @@ void decrementPair(RDS *rds, PAIR *target)
   }
 }
 
-PAIR *createPair(RDS *rds, CODE left, CODE right, uint f_pos)
+PAIR *createPair(RDS *rds, CODE left, CODE right, ulong f_pos)
 {
   PAIR *pair = (PAIR*)malloc(sizeof(PAIR));
   uint h;
@@ -234,7 +234,7 @@ void initRDS(RDS *rds)
 {
   uint i;
   SEQ *seq = rds->seq;
-  uint size_w = rds->txt_len;
+  size_t size_w = rds->txt_len;
   CODE A, B;
   PAIR *pair;
   PAIR **p_que = rds->p_que;
@@ -351,7 +351,7 @@ PAIR *getMaxPair(RDS *rds)
   return max_pair;
 }
 
-uint leftPos_SQ(RDS *rds, uint pos)
+ulong leftPos_SQ(RDS *rds, ulong pos)
 {
   SEQ *seq = rds->seq;
 
@@ -368,7 +368,7 @@ uint leftPos_SQ(RDS *rds, uint pos)
   }
 }
 
-uint rightPos_SQ(RDS *rds, uint pos)
+ulong rightPos_SQ(RDS *rds, ulong pos)
 {
   SEQ *seq = rds->seq;
 
@@ -385,7 +385,7 @@ uint rightPos_SQ(RDS *rds, uint pos)
   }
 }
 
-void removeLink_SQ(RDS *rds, uint target_pos)
+void removeLink_SQ(RDS *rds, ulong target_pos)
 {
   SEQ *seq = rds->seq;
   uint prev_pos, next_pos;
@@ -407,13 +407,13 @@ void removeLink_SQ(RDS *rds, uint target_pos)
   }
 }
 
-void updateBlock_SQ(RDS *rds, CODE new_code, uint target_pos)
+void updateBlock_SQ(RDS *rds, CODE new_code, ulong target_pos)
 {
   SEQ *seq = rds->seq;
-  uint l_pos, r_pos, rr_pos, nx_pos;
+  ulong l_pos, r_pos, rr_pos, nx_pos;
   CODE c_code, r_code, l_code, rr_code;
   PAIR *l_pair, *c_pair, *r_pair;
-  uint i, j;
+  ulong i, j;
 
   l_pos  = leftPos_SQ(rds, target_pos);
   r_pos  = rightPos_SQ(rds, target_pos);
@@ -539,7 +539,7 @@ uint replacePairs(RDS *rds, PAIR *max_pair, CODE new_code)
   return num_replaced;
 }
 
-DICT *createDict(uint txt_len)
+DICT *createDict(size_t txt_len)
 {
   uint i;
   DICT *dict = (DICT*)malloc(sizeof(DICT));

@@ -36,15 +36,15 @@ typedef struct Pair {
   CODE left;
   CODE right;
   uint freq;
-  uint f_pos;
-  uint b_pos;
+  ulong f_pos;
+  ulong b_pos;
   struct Pair *h_next;
   struct Pair *p_next;
   struct Pair *p_prev;
 } PAIR;
 
 typedef struct RePair_data_structures {
-  uint txt_len;
+  size_t txt_len;
   SEQ *seq;
   uint num_pairs;
   uint h_num;
@@ -64,7 +64,7 @@ typedef struct Dictionary {
   RULE *rule;
   size_t seq_len;
   CODE *comp_seq;
-  uint buff_size;
+  size_t buff_size;
 } DICT;
 
 DICT *RunRepair(FILE *input);
