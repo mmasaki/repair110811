@@ -64,7 +64,7 @@ typedef struct Dictionary {
   RULE *rule;
   size_t seq_len;
   CODE *comp_seq;
-  size_t buff_size;
+  uint buff_size;
 } DICT;
 
 DICT *RunRepair(FILE *input);
