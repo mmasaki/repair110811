@@ -280,7 +280,7 @@ void initRDS(RDS *rds)
 RDS *createRDS(std::string data)
 {
   size_t size_w;
-  uint i;
+  ulong i;
   SEQ *seq;
   CODE c;
   uint h_num;
