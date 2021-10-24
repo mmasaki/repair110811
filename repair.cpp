@@ -291,9 +291,13 @@ RDS *createRDS(std::string data)
   RDS *rds;
 
   size_w = data.length();  
-  printf("text size = %ld(bytes)\n", size_w); fflush(stdout);
+  /* printf("text size = %ld(bytes)\n", size_w); fflush(stdout); */
   seq = (SEQ*)malloc(sizeof(SEQ)*size_w);
-  printf("malloc done\n"); fflush(stdout);
+
+  if (seq == NULL) {
+    printf("malloc failed\n"); fflush(stdout);
+    abort();
+  }
 
   for(char& c : data) {
     seq[i].code = (unsigned char)c;
