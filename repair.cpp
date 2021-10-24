@@ -252,7 +252,7 @@ void resetPQ(RDS *rds, uint p_num)
 
 void initRDS(RDS *rds)
 {
-  uint i;
+  ulong i;
   SEQ *seq = rds->seq;
   size_t size_w = rds->txt_len;
   CODE A, B;
