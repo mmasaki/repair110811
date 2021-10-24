@@ -37,7 +37,7 @@ typedef struct Sequence {
 typedef struct Pair {
   CODE left;
   CODE right;
-  uint freq;
+  ulong freq;
   ulong f_pos;
   ulong b_pos;
   struct Pair *h_next;
@@ -51,9 +51,9 @@ typedef struct RePair_data_structures {
   uint num_pairs;
   uint h_num;
   PAIR **h_first;
-  uint p_max;
+  ulong p_max;
   PAIR **p_que;
-  uint p_i;
+  ulong p_i;
 } RDS;
 
 typedef struct Rule {

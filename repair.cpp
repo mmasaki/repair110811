@@ -46,8 +46,8 @@ std::mutex m;
 
 PAIR *locatePair(RDS *rds, CODE left, CODE right);
 void reconstructHash(RDS *rds);
-void insertPair_PQ(RDS *rds, PAIR *target, uint p_num);
-void removePair_PQ(RDS *rds, PAIR *target, uint p_num);
+void insertPair_PQ(RDS *rds, PAIR *target, ulong p_num);
+void removePair_PQ(RDS *rds, PAIR *target, ulong p_num);
 void incrementPair(RDS *rds, PAIR *target);
 void decrementPair(RDS *rds, PAIR *target);
 PAIR *createPair(RDS *rds, CODE left, CODE right, ulong f_pos);
@@ -113,7 +113,7 @@ void reconstructHash(RDS *rds)
   }
 }
 
-void insertPair_PQ(RDS *rds, PAIR *target, uint p_num)
+void insertPair_PQ(RDS *rds, PAIR *target, ulong p_num)
 {
   PAIR *tmp;
 
@@ -130,7 +130,7 @@ void insertPair_PQ(RDS *rds, PAIR *target, uint p_num)
   }
 }
 
-void removePair_PQ(RDS *rds, PAIR *target, uint p_num)
+void removePair_PQ(RDS *rds, PAIR *target, ulong p_num)
 {
   if (p_num >= rds->p_max) {
     p_num = 0;
@@ -306,15 +306,11 @@ RDS *createRDS(std::string data)
     i++;
   }
 
-  printf("hoge 1\n"); fflush(stdout);
-
   h_num = INIT_HASH_NUM;
   h_first = (PAIR**)malloc(sizeof(PAIR*)*primes[h_num]);
   for (i = 0; i < primes[h_num]; i++) {
     h_first[i] = NULL;
   }
-
-  printf("hoge 2\n"); fflush(stdout);
 
   p_max = (uint)ceil(sqrt((double)size_w));
   p_que = (PAIR**)malloc(sizeof(PAIR*)*p_max);
@@ -322,8 +318,6 @@ RDS *createRDS(std::string data)
     p_que[i] = NULL;
   }
 
-  printf("hoge 3\n"); fflush(stdout);
-  
   rds = (RDS*)malloc(sizeof(RDS));
   rds->txt_len = size_w;
   rds->seq = seq;
@@ -333,7 +327,6 @@ RDS *createRDS(std::string data)
   rds->p_max = p_max;
   rds->p_que = p_que;
   rds->p_i = 0;
-  printf("initRDS\n"); fflush(stdout);
   initRDS(rds);
 
   return rds;
@@ -352,10 +345,10 @@ void destructRDS(RDS *rds)
 
 PAIR *getMaxPair(RDS *rds)
 {
-  uint i = rds->p_i;
+  ulong i = rds->p_i;
   PAIR **p_que = rds->p_que;
   PAIR *p, *max_pair;
-  uint max;
+  ulong max;
 
   if (p_que[0] != NULL) {
     p = p_que[0];
@@ -549,7 +542,7 @@ void updateBlock_SQ(RDS *rds, CODE new_code, ulong target_pos)
 uint replacePairs(RDS *rds, PAIR *max_pair, CODE new_code)
 {
   ulong i, j;
-  uint num_replaced = 0;
+  ulong num_replaced = 0;
   SEQ *seq = rds->seq;
 
   i = max_pair->f_pos;
@@ -661,13 +654,11 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
     dict->rule[new_code].right = max_pair->right;
 
     if (dict->num_rules >= dict->buff_size) {
-
-      /* puts("realloc"); */
       dict->buff_size *= DICTIONARY_SCALING_FACTOR;
       dict->rule = (RULE*)realloc(dict->rule, sizeof(RULE)*dict->buff_size);
       if (dict->rule == NULL) {
         puts("Memory reallocate error (rule) at addDict.");
-        exit(1);
+        abort();
       }
     }
     m.unlock();
