@@ -280,7 +280,7 @@ void initRDS(RDS *rds)
 RDS *createRDS(std::string data)
 {
   size_t size_w;
-  ulong i;
+  ulong i = 0;
   SEQ *seq;
   CODE c;
   uint h_num;
@@ -291,10 +291,10 @@ RDS *createRDS(std::string data)
   RDS *rds;
 
   size_w = data.length();  
-  /* printf("text size = %ld(bytes)\n", size_w); */
+  printf("text size = %ld(bytes)\n", size_w); fflush(stdout);
   seq = (SEQ*)malloc(sizeof(SEQ)*size_w);
+  printf("malloc done\n"); fflush(stdout);
 
-  i = 0;
   for(char& c : data) {
     seq[i].code = (unsigned char)c;
     seq[i].next = DUMMY_POS;
@@ -302,17 +302,23 @@ RDS *createRDS(std::string data)
     i++;
   }
 
+  printf("hoge 1\n"); fflush(stdout);
+
   h_num = INIT_HASH_NUM;
   h_first = (PAIR**)malloc(sizeof(PAIR*)*primes[h_num]);
   for (i = 0; i < primes[h_num]; i++) {
     h_first[i] = NULL;
   }
 
+  printf("hoge 2\n"); fflush(stdout);
+
   p_max = (uint)ceil(sqrt((double)size_w));
   p_que = (PAIR**)malloc(sizeof(PAIR*)*p_max);
   for (i = 0; i < p_max; i++) {
     p_que[i] = NULL;
   }
+
+  printf("hoge 3\n"); fflush(stdout);
   
   rds = (RDS*)malloc(sizeof(RDS));
   rds->txt_len = size_w;
@@ -323,6 +329,7 @@ RDS *createRDS(std::string data)
   rds->p_max = p_max;
   rds->p_que = p_que;
   rds->p_i = 0;
+  printf("initRDS\n"); fflush(stdout);
   initRDS(rds);
 
   return rds;
@@ -742,11 +749,9 @@ DICT *RunRepair(char *target_filename, int threads)
       ulong len = block_len;
       if (i == threads-1) { len += rest; }
       std::string block = data.substr(start, len);
-      printf("block_len %d: %lu\n", i, block.length());
-      fflush(stdout);
+      printf("block_len %d: %lu\n", i, block.length()); fflush(stdout);
       rds[i] = createRDS(block);
-      printf("RDS created: %d\n", i);
-      fflush(stdout);
+      printf("RDS created: %d\n", i); fflush(stdout);
       while ((max_pair = getMaxPair(rds[i])) != NULL) {
         new_code = addNewPair(dict, max_pair);
         //if (new_code > USHRT_MAX) break;
@@ -765,7 +770,7 @@ DICT *RunRepair(char *target_filename, int threads)
     destructRDS(rds[i]);
   }
 
-  printf("rule: %d seq_len: %d\n", dict->num_rules, dict->seq_len);
+  printf("rule: %d seq_len: %ld\n", dict->num_rules, dict->seq_len);
   printf("Finished!\n"); fflush(stdout);
 
   return dict;
