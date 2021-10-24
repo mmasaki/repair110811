@@ -259,7 +259,7 @@ void initRDS(RDS *rds)
 RDS *createRDS(FILE *input)
 {
   size_t size_w;
-  uint i;
+  ulong i;
   SEQ *seq;
   CODE c;
   uint h_num;
@@ -269,8 +269,10 @@ RDS *createRDS(FILE *input)
   PAIR *pair;
   RDS *rds;
 
-  fseek(input,0,SEEK_END);
-  size_w = ftell(input);
+  printf("fseeko\n");
+  fseeko(input,0,SEEK_END);
+  printf("ftello\n");
+  size_w = ftello(input);
   rewind(input);
   seq = (SEQ*)malloc(sizeof(SEQ)*size_w);
 
@@ -283,6 +285,8 @@ RDS *createRDS(FILE *input)
     seq[i].prev = DUMMY_POS;
     i++;
   }
+
+  printf("read done\n");
 
   h_num = INIT_HASH_NUM;
   h_first = (PAIR**)malloc(sizeof(PAIR*)*primes[h_num]);
