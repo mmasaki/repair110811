@@ -232,7 +232,7 @@ void resetPQ(RDS *rds, uint p_num)
 
 void initRDS(RDS *rds)
 {
-  uint i;
+  ulong i;
   SEQ *seq = rds->seq;
   size_t size_w = rds->txt_len;
   CODE A, B;
@@ -395,7 +395,7 @@ ulong rightPos_SQ(RDS *rds, ulong pos)
 void removeLink_SQ(RDS *rds, ulong target_pos)
 {
   SEQ *seq = rds->seq;
-  uint prev_pos, next_pos;
+  ulong prev_pos, next_pos;
 
   assert(seq[target_pos].code != DUMMY_CODE);
 
