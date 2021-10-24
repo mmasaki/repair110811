@@ -725,26 +725,28 @@ DICT *RunRepair(char *target_filename, int threads)
   fin.close();
 
   std::string data(strstream.str());
-  long txt_len = data.length();
-  long block_len = txt_len / threads;
-  long rest = txt_len % threads;
+  size_t txt_len = data.length();
+  size_t block_len = txt_len / threads;
+  ulong rest = txt_len % threads;
 
   dict = createDict(txt_len);
   code_map.rehash(txt_len / 50);
 
-  printf("Generating CFG..."); fflush(stdout);
+  printf("Generating CFG...\n"); fflush(stdout);
   num_loop = 0; num_replaced = 0;
   for (int i = 0; i < threads; i++) {
     ths.push_back(std::thread([&, i](){
       PAIR *max_pair;
       CODE new_code;
-      long start = block_len * i;
-      long len = block_len;
+      ulong start = block_len * i;
+      ulong len = block_len;
       if (i == threads-1) { len += rest; }
       std::string block = data.substr(start, len);
       printf("block_len %d: %lu\n", i, block.length());
+      fflush(stdout);
       rds[i] = createRDS(block);
-      /* printf("RDS created: %d\n", i); */
+      printf("RDS created: %d\n", i);
+      fflush(stdout);
       while ((max_pair = getMaxPair(rds[i])) != NULL) {
         new_code = addNewPair(dict, max_pair);
         //if (new_code > USHRT_MAX) break;
