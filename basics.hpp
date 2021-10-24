@@ -34,7 +34,7 @@
 #define DUMMY_POS UINT_MAX
 
 #ifndef CODE
-typedef unsigned long CODE;
+typedef unsigned int CODE;
 #endif
 #ifndef uchar
 typedef unsigned char uchar;
