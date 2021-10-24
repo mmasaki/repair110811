@@ -30,23 +30,23 @@
 
 typedef struct Sequence {
   CODE code;
-  uint next;
-  uint prev;
+  ulong next;
+  ulong prev;
 } SEQ;
 
 typedef struct Pair {
   CODE left;
   CODE right;
   uint freq;
-  uint f_pos;
-  uint b_pos;
+  ulong f_pos;
+  ulong b_pos;
   struct Pair *h_next;
   struct Pair *p_next;
   struct Pair *p_prev;
 } PAIR;
 
 typedef struct RePair_data_structures {
-  uint txt_len;
+  size_t txt_len;
   SEQ *seq;
   uint num_pairs;
   uint h_num;
@@ -62,7 +62,7 @@ typedef struct Rule {
 } RULE;
 
 typedef struct Dictionary {
-  uint txt_len;
+  size_t txt_len;
   uint num_rules;
   RULE *rule;
   uint seq_len;

@@ -26,7 +26,7 @@ uint bits (uint n)
   return b;
 }
 
-void putLeaf(uint numcode, uint lvcode, BITOUT *bitout) {
+void putLeaf(uint numcode, CODE lvcode, BITOUT *bitout) {
   uint bitslen = bits(numcode);
   writeBits(bitout, lvcode, bitslen);
 }
@@ -40,7 +40,7 @@ void putParen(uchar b, BITOUT *bitout) {
   }
 }
 
-void encodeCFG_rec(uint code, EDICT *dict, BITOUT *bitout) {
+void encodeCFG_rec(CODE code, EDICT *dict, BITOUT *bitout) {
   static uint newcode = CHAR_SIZE;
 
   if (dict->tcode[code] == DUMMY_CODE) {
