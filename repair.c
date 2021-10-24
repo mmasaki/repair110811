@@ -270,13 +270,16 @@ RDS *createRDS(FILE *input)
   RDS *rds;
 
   printf("fseeko\n");
+  fflush(stdout);
   fseeko(input,0,SEEK_END);
   printf("ftello\n");
+  fflush(stdout);
   size_w = ftello(input);
   rewind(input);
   seq = (SEQ*)malloc(sizeof(SEQ)*size_w);
 
   printf("text size = %ld(bytes)\n", size_w);
+  fflush(stdout);
 
   i = 0;
   while ((c = getc(input)) != EOF) {
