@@ -28,8 +28,8 @@
 
 typedef struct Sequence {
   CODE code;
-  uint next;
-  uint prev;
+  ulong next;
+  ulong prev;
 } SEQ;
 
 typedef struct Pair {

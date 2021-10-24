@@ -524,7 +524,7 @@ void updateBlock_SQ(RDS *rds, CODE new_code, ulong target_pos)
 
 uint replacePairs(RDS *rds, PAIR *max_pair, CODE new_code)
 {
-  uint i, j;
+  ulong i, j;
   uint num_replaced = 0;
   SEQ *seq = rds->seq;
 
@@ -592,7 +592,7 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
 
 void getCompSeq(RDS *rds, DICT *dict)
 {
-  uint i, j;
+  ulong i, j;
   SEQ *seq = rds->seq;
   uint seq_len;
   CODE *comp_seq;
