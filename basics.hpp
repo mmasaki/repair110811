@@ -31,7 +31,7 @@
 #define DICTIONARY_SCALING_FACTOR (1.25)
 #define INIT_HASH_NUM 15
 #define LOAD_FACTOR 1.0
-#define DUMMY_POS UINT_MAX
+#define DUMMY_POS ULONG_MAX
 
 #ifndef CODE
 typedef unsigned int CODE;

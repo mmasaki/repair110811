@@ -52,7 +52,7 @@ void incrementPair(RDS *rds, PAIR *target);
 void decrementPair(RDS *rds, PAIR *target);
 PAIR *createPair(RDS *rds, CODE left, CODE right, ulong f_pos);
 void destructPair(RDS *rds, PAIR *target);
-void resetPQ(RDS *rds, uint p_num);
+void resetPQ(RDS *rds, ulong p_num);
 void initRDS(RDS *rds);
 RDS *createRDS(FILE *input);
 void destructRDS(RDS *rds);
@@ -61,7 +61,7 @@ ulong leftPos_SQ(RDS *rds, ulong pos);
 ulong rightPos_SQ(RDS *rds, ulong pos);
 void removeLink_SQ(RDS *rds, ulong target_pos);
 void updateBlock_SQ(RDS *rds, CODE new_code, ulong target_pos);
-uint replacePairs(RDS *rds, PAIR *max_pair, CODE new_code);
+ulong replacePairs(RDS *rds, PAIR *max_pair, CODE new_code);
 DICT *createDict(size_t txt_len);
 CODE addNewPair(DICT *dict, PAIR *max_pair);
 void getCompSeq(RDS *rds, DICT *dict);
@@ -234,7 +234,7 @@ void destructPair(RDS *rds, PAIR *target)
   rds->num_pairs--;
 }
 
-void resetPQ(RDS *rds, uint p_num)
+void resetPQ(RDS *rds, ulong p_num)
 {
   PAIR **p_que = rds->p_que;
   PAIR *pair = p_que[p_num];
@@ -309,7 +309,7 @@ RDS *createRDS(std::string data)
     h_first[i] = NULL;
   }
 
-  p_max = (uint)ceil(sqrt((double)size_w));
+  p_max = (ulong)ceil(sqrt((double)size_w));
   p_que = (PAIR**)malloc(sizeof(PAIR*)*p_max);
   for (i = 0; i < p_max; i++) {
     p_que[i] = NULL;
@@ -533,7 +533,7 @@ void updateBlock_SQ(RDS *rds, CODE new_code, ulong target_pos)
   }
 }
 
-uint replacePairs(RDS *rds, PAIR *max_pair, CODE new_code)
+ulong replacePairs(RDS *rds, PAIR *max_pair, CODE new_code)
 {
   ulong i, j;
   ulong num_replaced = 0;
@@ -712,7 +712,7 @@ DICT *RunRepair(char *target_filename, int threads)
   PAIR *max_pair;
   CODE new_code;
   ulong num_replaced = 0;
-  std::atomic_uint cseqlen;
+  std::atomic_ulong cseqlen;
   std::ifstream fin(target_filename);
 
   if (!fin) return NULL;
@@ -750,8 +750,8 @@ DICT *RunRepair(char *target_filename, int threads)
   }
 
   for (std::thread &th : ths) {
-    printf("join\n"); fflush(stdout);
     th.join();
+    printf("join\n"); fflush(stdout);
   }
 
   printf("comp_seq\n"); fflush(stdout);
