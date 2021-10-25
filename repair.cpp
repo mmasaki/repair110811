@@ -163,8 +163,6 @@ void incrementPair(RDS *rds, PAIR *target)
 
 void decrementPair(RDS *rds, PAIR *target)
 {
-  uint h;
-
   if (target->freq > rds->p_max) {
     target->freq--;
     return;
@@ -185,7 +183,6 @@ PAIR *createPair(RDS *rds, CODE left, CODE right, ulong f_pos)
   PAIR *pair = (PAIR*)malloc(sizeof(PAIR));
   uint h;
   PAIR *q;
-  uint i;
 
   pair->left  = left;
   pair->right = right;
@@ -285,7 +282,7 @@ RDS *createRDS(std::string data)
   CODE c;
   uint h_num;
   PAIR **h_first;
-  uint p_max;
+  ulong p_max;
   PAIR **p_que;
   PAIR *pair;
   RDS *rds;
@@ -334,9 +331,6 @@ RDS *createRDS(std::string data)
 
 void destructRDS(RDS *rds)
 {
-  PAIR *p, *q;
-  uint i;
-
   free(rds->seq);
   free(rds->h_first);
   free(rds->p_que);
@@ -565,7 +559,7 @@ uint replacePairs(RDS *rds, PAIR *max_pair, CODE new_code)
 
 DICT *createDict(size_t txt_len)
 {
-  uint i;
+  ulong i;
   DICT *dict = (DICT*)malloc(sizeof(DICT));
   dict->txt_len = txt_len;
   dict->buff_size = INIT_DICTIONARY_SIZE;
@@ -674,7 +668,7 @@ void getCompSeq(RDS *rds, DICT *dict)
 {
   ulong i, j;
   SEQ *seq = rds->seq;
-  uint seq_len;
+  size_t seq_len;
   CODE *comp_seq;
 
   i = 0; seq_len = 0;
@@ -688,7 +682,8 @@ void getCompSeq(RDS *rds, DICT *dict)
   }
 
   printf("rules: %u\n", dict->num_rules);
-  printf("dict seqlen: %d\n", seq_len);
+  printf("dict seqlen: %ld\n", seq_len);
+  fflush(stdout);
   if (dict->comp_seq) {
     comp_seq = (CODE*)realloc(dict->comp_seq, sizeof(CODE)*(dict->seq_len+seq_len));
   } else {
@@ -716,7 +711,7 @@ DICT *RunRepair(char *target_filename, int threads)
   DICT *dict;
   PAIR *max_pair;
   CODE new_code;
-  uint num_loop, num_replaced;
+  ulong num_replaced = 0;
   std::atomic_uint cseqlen;
   std::ifstream fin(target_filename);
 
@@ -729,19 +724,18 @@ DICT *RunRepair(char *target_filename, int threads)
   std::string data(strstream.str());
   size_t txt_len = data.length();
   size_t block_len = txt_len / threads;
-  ulong rest = txt_len % threads;
+  size_t rest = txt_len % threads;
 
   dict = createDict(txt_len);
   code_map.rehash(txt_len / 50);
 
   printf("Generating CFG...\n"); fflush(stdout);
-  num_loop = 0; num_replaced = 0;
   for (int i = 0; i < threads; i++) {
     ths.push_back(std::thread([&, i](){
       PAIR *max_pair;
       CODE new_code;
       ulong start = block_len * i;
-      ulong len = block_len;
+      size_t len = block_len;
       if (i == threads-1) { len += rest; }
       std::string block = data.substr(start, len);
       printf("block_len %d: %lu\n", i, block.length()); fflush(stdout);
@@ -756,9 +750,11 @@ DICT *RunRepair(char *target_filename, int threads)
   }
 
   for (std::thread &th : ths) {
+    printf("join\n"); fflush(stdout);
     th.join();
   }
 
+  printf("comp_seq\n"); fflush(stdout);
   CODE *comp_seq;
   for (int i = 0; i < threads; i++) {
     getCompSeq(rds[i], dict);
@@ -780,17 +776,16 @@ void DestructDict(DICT *dict)
 
 void OutputGeneratedCFG(DICT *dict, FILE *output)
 {
-  ulong txt_len = dict->txt_len;
+  size_t txt_len = dict->txt_len;
   uint num_rules = dict->num_rules;
-  uint seq_len = dict->seq_len;
+  size_t seq_len = dict->seq_len;
 
   printf("num_rules = %d\n", num_rules);
-  printf("seq_len = %d\n", seq_len);
+  printf("seq_len = %ld\n", seq_len);
 
   fwrite(&txt_len, sizeof(ulong), 1, output);
   fwrite(&num_rules, sizeof(uint), 1, output);
-  fwrite(&seq_len, sizeof(uint), 1, output);
+  fwrite(&seq_len, sizeof(size_t), 1, output);
   fwrite(dict->rule+CHAR_SIZE+1, sizeof(RULE), num_rules-(CHAR_SIZE+1), output);
   fwrite(dict->comp_seq, sizeof(CODE), seq_len, output);
 }
-
