@@ -34,7 +34,7 @@ Author's contact: Shirou Maruyama, Dept. of Informatics, Kyushu University. 744 
 #include <map>
 #include <unordered_map>
 #include <atomic>
-// #include <boost/functional/hash.hpp>
+#include <boost/functional/hash.hpp>
 
 #include "tbb/concurrent_hash_map.h"
 #include "tbb/scalable_allocator.h"
@@ -594,7 +594,6 @@ struct pair_hash
 */
 
 /* std::unordered_map<std::pair<int, int>, int, pair_hash> code_map; */
-/*
 std::unordered_map<std::pair<int, int>, int, boost::hash<pair<int, int>>> code_map;
 
 CODE addNewPair(DICT *dict, PAIR *max_pair)
@@ -628,8 +627,8 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
 
   return new_code;
 }
-*/
 
+/*
 tbb::concurrent_hash_map<std::pair<int, int>, int> code_map;
 
 CODE addNewPair(DICT *dict, PAIR *max_pair)
@@ -663,6 +662,7 @@ CODE addNewPair(DICT *dict, PAIR *max_pair)
 
   return new_code;
 }
+*/
 
 void getCompSeq(RDS *rds, DICT *dict)
 {
